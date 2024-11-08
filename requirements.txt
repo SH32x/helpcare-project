@@ -1,2 +1,37 @@
 # Project dependencies 
 django
+djangorestframework
+django-cors-headers
+django-environ
+whitenoise
+gunicorn
+psycopg2-binary  # For PostgreSQL
+dj-database-url
+
+# Azure
+azure-mgmt-web
+azure.identity
+azure.keyvault.secrets
+azure.storage.queue
+
+# Authentication & Security
+django-allauth
+django-rest-auth
+djangorestframework-simplejwt
+python-jose
+
+# API & Documentation
+drf-yasg  # Swagger/OpenAPI Documentation
+requests
+
+# Frontend Integration
+django-webpack-loader
+
+# Testing
+pytest
+pytest-django
+coverage
+
+# Performance & Caching
+django-redis
+redis
