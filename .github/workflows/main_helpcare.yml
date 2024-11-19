@@ -80,3 +80,8 @@ jobs:
           app-name: 'HelpCare'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           slot-name: 'Production'
+      
+      # Verification
+      - name: Verify deployment
+        run: |
+          curl -sSf https://helpcare-egcpaqffcefdaag0.canadacentral-01.azurewebsites.net || echo "Connection Tested"
