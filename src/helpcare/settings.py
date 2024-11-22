@@ -10,7 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+if 'WEBSITE_HOSTNAME' in os.environ: # Running on Azure
+    from azure import *
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,15 +27,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-_g&ndfu2(hck8^zwz20mv3^q5zvkwoh-xkuzf6#8@(^fkxb2^a'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
 
-ALLOWED_HOSTS = ['.azurewebsites.net', 'helpcare.azurewebsites.net']
+# Default to False (secure for production)
+# Will be overridden by .env or launch.json in development
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+
+ALLOWED_HOSTS = ['*'] # Allows any IP address to access
+# ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # CSRF settings for Azure
-CSRF_TRUSTED_ORIGINS = ['https://helpcare.azurewebsites.net']
+CSRF_TRUSTED_ORIGINS = ['https://'+ os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # Application definition
 
@@ -39,10 +49,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # For static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,10 +87,24 @@ WSGI_APPLICATION = 'helpcare.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+hostname = os.environ.get('DBHOST', '').split('.')[0]
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['DBNAME'],
+        'HOST': hostname + ".postgres.database.azure.com",
+        'USER': os.environ['DBUSER'], # For postgreSQL flexible server
+        # 'USER': os.environ['DBUSER'] + "@" + hostname, # For postgreSQL single server
+        'PASSWORD': os.environ['DBPASS'],
+        'OPTIONS': {
+            'sslmode': 'verify-full',  
+            'ssl': {
+                'verify_cert': True,
+                'ssl_cert': None,  # Path to client-cert 
+                'ssl_key': None,   # Path to client-key 
+                'ssl_ca': None,    # Path to CA cert 
+            }
+        },
     }
 }
 
@@ -125,7 +151,11 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Security settings
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+
+# Disable SSL/HTTPS redirect
+# Prevents 'message bad request' error on runserver
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+SECURE_PROXY_SSL_HEADER = None

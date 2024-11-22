@@ -9,19 +9,14 @@ psycopg2-binary #PostgreSQL DB connection
 dj-database-url #Checks database urls
 
 # Azure
-azure-mgmt-web
 azure.identity # Azure auth
 azure.keyvault.secrets #Azure secrets
 
 # Authentication & Security
-django-allauth
-django-rest-auth
+# Uses JWT for authentication
 djangorestframework-simplejwt
-python-jose
-
-# API & Documentation
-drf-yasg  
-requests
+pyjwt
+python-jose  
 
 # Performance & Caching
 django-redis

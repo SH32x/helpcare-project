@@ -1,4 +1,17 @@
 # Testing
-pytest
+pytest 
 pytest-django
 coverage
+
+# Config
+python-dotenv
+# Loads environment variables from .env file into app, manages config and API keys securely. 
+
+# API & Documentation
+drf-yasg
+
+# For development
+# pip install -r requirements-dev.txt
+
+# For production
+# pip install -r requirements.txt
