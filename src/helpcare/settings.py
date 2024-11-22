@@ -93,8 +93,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ['DBNAME'],
         'HOST': hostname + ".postgres.database.azure.com",
-        'USER': os.environ['DBUSER'], # For postgreSQL flexible server
-        # 'USER': os.environ['DBUSER'] + "@" + hostname, # For postgreSQL single server
+        # 'USER': os.environ['DBUSER'], # For postgreSQL flexible server
+        'USER': os.environ['DBUSER'] + "@" + hostname, # For postgreSQL single server
         'PASSWORD': os.environ['DBPASS'],
         'OPTIONS': {
             'sslmode': 'verify-full',  
