@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+if 'WEBSITE_HOSTNAME' in os.environ: # Running on Azure
+    from azure import *
 
 # Load environment variables from .env file
 load_dotenv()
@@ -33,9 +35,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*'] # Allows any IP address to access
+# ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # CSRF settings for Azure
-CSRF_TRUSTED_ORIGINS = ['https://helpcare.azurewebsites.net']
+CSRF_TRUSTED_ORIGINS = ['https://'+ os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # Application definition
 
@@ -51,6 +54,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # For static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -83,10 +87,24 @@ WSGI_APPLICATION = 'helpcare.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+hostname = os.environ.get('DBHOST', '').split('.')[0]
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['DBNAME'],
+        'HOST': hostname + ".postgres.database.azure.com",
+        'USER': os.environ['DBUSER'], # For postgreSQL flexible server
+        # 'USER': os.environ['DBUSER'] + "@" + hostname, # For postgreSQL single server
+        'PASSWORD': os.environ['DBPASS'],
+        'OPTIONS': {
+            'sslmode': 'verify-full',  
+            'ssl': {
+                'verify_cert': True,
+                'ssl_cert': None,  # Path to client-cert 
+                'ssl_key': None,   # Path to client-key 
+                'ssl_ca': None,    # Path to CA cert 
+            }
+        },
     }
 }
 
