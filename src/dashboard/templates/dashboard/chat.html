@@ -1,0 +1,61 @@
+<!-- dashboard/templates/dashboard/chat.html -->
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-4 rounded-lg shadow">
+    <h2 class="text-xl font-semibold mb-4">Chat Assistant</h2>
+    <div id="chat-window" class="h-96 border rounded p-4 mb-4 overflow-y-auto"></div>
+    <div class="flex">
+        <input type="text" id="chat-input" class="flex-1 p-2 border rounded-l" placeholder="Type your message...">
+        <button id="send-button" class="bg-green-500 text-white px-4 py-2 rounded-r hover:bg-green-600">Send</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatWindow = document.getElementById('chat-window');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+
+    function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        appendMessage('You: ' + message);
+        
+        fetch('/api/chat-message/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                appendMessage('Bot: ' + data.response);
+            }
+        });
+
+        chatInput.value = '';
+    }
+
+    function appendMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'mb-2';
+        messageDiv.textContent = message;
+        chatWindow.appendChild(messageDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+});
+</script>
+{% endblock %}

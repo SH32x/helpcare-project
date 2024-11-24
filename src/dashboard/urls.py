@@ -1,8 +1,8 @@
+# dashboard/urls.py
 from django.urls import path
 from dashboard import views
 
 urlpatterns = [
-
-    # Placeholder
-    path("", views.home, name="home"),
+    path('', views.chat, name='chat'),
+    path('api/chat-message/', views.chat_message, name='chat_message'),
 ]
