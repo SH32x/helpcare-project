@@ -39,7 +39,7 @@ def chat_message(request):
             })
     return JsonResponse({
         'status': 'error',
-        'message': 'Invalid request method'
+        'message': 'Invalid request'
     })
 
 

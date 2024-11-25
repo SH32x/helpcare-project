@@ -5,7 +5,7 @@ from django.conf import settings
 import os
 from ..models import ChatMessage
 
-class HospitalAIService:
+class AIChatService:
     """
     Service class for managing hospital-related AI interactions using Azure OpenAI.
     
