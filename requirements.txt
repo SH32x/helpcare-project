@@ -1,5 +1,5 @@
 # Core Django Components
-Django
+django
 djangorestframework
 django-cors-headers
 django-environ
