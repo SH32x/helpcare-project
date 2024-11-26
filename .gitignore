@@ -28,7 +28,7 @@ db.sqlite3
 db.sqlite3-journal
 
 # Static files
-src/staticfiles/
+staticfiles/
 
 # Virtual Environment
 venv/

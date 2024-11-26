@@ -1,4 +1,4 @@
-# src/dashboard/services/openai.py
+# dashboard/services/openai.py
 
 from openai import AzureOpenAI
 from django.conf import settings
