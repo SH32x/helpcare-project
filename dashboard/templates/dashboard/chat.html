@@ -18,41 +18,68 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatWindow = document.getElementById('chat-window');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
-
-    function sendMessage() {
-        const message = chatInput.value.trim();
-        if (!message) return;
-
-        appendMessage('You: ' + message);
-        
-        fetch('/api/chat-message/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                appendMessage('Bot: ' + data.response);
-            }
-        });
-
-        chatInput.value = '';
+    
+    function disableInterface() {
+        chatInput.disabled = true;
+        sendButton.disabled = true;
+        sendButton.classList.add('opacity-50');
     }
-
-    function appendMessage(message) {
+    
+    function enableInterface() {
+        chatInput.disabled = false;
+        sendButton.disabled = false;
+        sendButton.classList.remove('opacity-50');
+        chatInput.focus();
+    }
+    
+    function appendMessage(text, isError = false, isUser = false) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = 'mb-2';
-        messageDiv.textContent = message;
+        messageDiv.className = `mb-3 p-2 rounded ${isError ? 'bg-red-100 text-red-700' : ''} ${isUser ? 'bg-gray-100' : ''}`;
+        
+        const prefix = isError ? '❌ Error: ' : (isUser ? 'You: ' : '🏥 Assistant: ');
+        messageDiv.textContent = prefix + text;
+        
         chatWindow.appendChild(messageDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
+    async function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        try {
+            disableInterface();
+            appendMessage(message, false, true);
+            chatInput.value = '';
+            
+            const response = await fetch('/api/chat-message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message }),
+            });
+
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                appendMessage(data.response);
+            } else {
+                appendMessage(data.message || 'Failed to get response', true);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            appendMessage('Failed to send message. Please try again.', true);
+        } finally {
+            enableInterface();
+        }
+    }
+
     sendButton.addEventListener('click', sendMessage);
+    
     chatInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             sendMessage();
         }
     });
