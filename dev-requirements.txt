@@ -1,6 +1,5 @@
 # Testing
-pytest
-pytest-django
+
 coverage
 
 # API Documentation

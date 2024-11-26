@@ -28,3 +28,7 @@ python-jose
 django-redis
 redis
 
+# Testing
+pytest
+pytest-django
+
