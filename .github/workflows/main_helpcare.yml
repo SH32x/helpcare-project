@@ -28,29 +28,39 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Create and start virtual environment
+      - name: Create deployment package
         run: |
-          python -m venv venv
-          source venv/bin/activate
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Prepare deployment package
-        run: |
-          # Create deployment script
-          echo "cd /home/site/wwwroot && gunicorn --bind=0.0.0.0:8000 --timeout 600 --chdir src helpcare.wsgi:application" > startup.sh
-          chmod +x startup.sh
+          # Create startup script
+          echo 'python -m gunicorn --bind=0.0.0.0:8000 --timeout 600 src.helpcare.wsgi:application' > startup.cmd
           
-          # Clean up unnecessary files
-          rm -rf .git .github .gitignore __pycache__ *.pyc
-          rm -rf venv
+          # Create deployment package
+          mkdir deploy
+          cp -r src deploy/
+          cp requirements.txt deploy/
+          cp startup.cmd deploy/
+          
+          # Create web.config for IIS
+          cat > deploy/web.config << 'EOL'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <system.webServer>
+              <handlers>
+                <add name="PythonHandler" path="*" verb="*" modules="httpPlatformHandler" resourceType="Unspecified"/>
+              </handlers>
+              <httpPlatform processPath="%home%\site\wwwroot\startup.cmd"
+                           arguments=""
+                           stdoutLogEnabled="true"
+                           stdoutLogFile="%home%\LogFiles\python.log"
+                           startupTimeLimit="60">
+              </httpPlatform>
+            </system.webServer>
+          </configuration>
+          EOL
 
       - name: Zip artifact for deployment
         run: |
-          zip -r release.zip ./* -x "venv/*"
+          cd deploy
+          zip -r ../release.zip ./*
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
