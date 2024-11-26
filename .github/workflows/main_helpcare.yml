@@ -10,7 +10,7 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-# Note: This file handles Continuous Deployment (CD), and is separate from the django.yml CI file.
+# Note: This file handles Continuous Deployment (CD).
 
 
 # Azure deployment runs on push to main and manual triggers (workflow_dispatch)

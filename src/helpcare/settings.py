@@ -36,7 +36,12 @@ ALLOWED_HOSTS = ['*'] # Allows any IP address to access
 # ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # CSRF settings for Azure
-CSRF_TRUSTED_ORIGINS = ['*']
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'https://localhost:8000',
+    'http://helpcare-egcpaqffcefdaag0.canadacentral-01.azurewebsites.net',
+    'https://helpcare-egcpaqffcefdaag0.canadacentral-01.azurewebsites.net',
+]
 
 # Application definition
 
@@ -95,7 +100,10 @@ DATABASES = {
         'USER': os.environ['DBUSER'] + "@" + hostname, # For postgreSQL single server
         'PASSWORD': os.environ['DBPASS'],
         'OPTIONS': {
-            'sslmode': 'require'
+            'sslmode': 'require',
+            'sslcert': None,
+            'sslkey': None,
+            'sslrootcert': None,
         },
     }
 }

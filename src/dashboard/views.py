@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .services.openai import AIChatService
-from models import Location
+from .models import ChatMessage
 import json
 
 
