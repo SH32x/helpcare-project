@@ -30,10 +30,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 # Default to False (secure for production)
-DEBUG = False
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = ['*'] # Allows any IP address to access
-# ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # CSRF settings for Azure
 CSRF_TRUSTED_ORIGINS = [
@@ -91,20 +90,17 @@ WSGI_APPLICATION = 'helpcare.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-hostname = os.environ.get('DBHOST', '').split('.')[0]
+# hostname = os.environ.get('DBHOST', '').split('.')[0]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['DBNAME'],
-        'HOST': hostname + ".postgres.database.azure.com",
-        'USER': os.environ['DBUSER'] + "@" + hostname, # For postgreSQL single server
-        'PASSWORD': os.environ['DBPASS'],
+        'NAME': os.environ.get('DBNAME'),
+        'HOST': os.environ.get('DBHOST'),
+        'USER': f"{os.environ.get('DBUSER')}@{os.environ.get('DBHOST').split('.')[0]}",
+        'PASSWORD': os.environ.get('DBPASS'),
         'OPTIONS': {
-            'sslmode': 'require',
-            'sslcert': None,
-            'sslkey': None,
-            'sslrootcert': None,
-        },
+            'sslmode': 'require'
+        }
     }
 }
 
@@ -144,14 +140,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 
+# Static files - simplify to bare minimum needed
 STATIC_URL = '/static/'
-
-# The absolute path to the directory where collectstatic will collect static files for deployment
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Extra places for collectstatic to find static files
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'dashboard/static'),
+    BASE_DIR / 'dashboard' / 'static',
 ]
 
 # Simplified static file serving
@@ -168,5 +161,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
-
 SECURE_PROXY_SSL_HEADER = None
