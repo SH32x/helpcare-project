@@ -38,29 +38,44 @@ jobs:
           
       - name: Create deployment package
         run: |
-          # Create startup command file
-          echo 'cd src && gunicorn helpcare.wsgi:application --bind=0.0.0.0:8000' > startup.txt
+          # Create wwwroot structure
+          mkdir -p wwwroot
+          cp -r src/* wwwroot/
+          cp requirements.txt wwwroot/
           
-          # Create deployment directory maintaining src structure
-          mkdir -p deploy
-          cp -r src deploy/
-          cp requirements.txt deploy/
-          cp startup.txt deploy/
-
-      - name: Generate web.config
-        run: |
-          cat > deploy/web.config << 'EOL'
+          # Create virtual environment setup script
+          cat > wwwroot/setup.sh << 'EOL'
+          #!/bin/bash
+          python -m venv antenv
+          source antenv/bin/activate
+          pip install -r requirements.txt
+          EOL
+          
+          # Make setup script executable
+          chmod +x wwwroot/setup.sh
+          
+          # Create startup command file
+          cat > wwwroot/startup.txt << 'EOL'
+          if [ ! -d "antenv" ]; then
+            ./setup.sh
+          fi
+          source antenv/bin/activate
+          cd src && gunicorn helpcare.wsgi:application --bind=0.0.0.0:8000
+          EOL
+          
+          # Generate web.config
+          cat > wwwroot/web.config << 'EOL'
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
             <system.webServer>
               <handlers>
                 <add name="PythonHandler" path="*" verb="*" modules="httpPlatformHandler" resourceType="Unspecified"/>
               </handlers>
-              <httpPlatform processPath="%home%\Python312\python.exe"
-                           arguments="%home%\site\wwwroot\src\manage.py runserver %HTTP_PLATFORM_PORT%"
+              <httpPlatform processPath="bash"
+                           arguments="%home%\site\wwwroot\startup.txt"
                            stdoutLogEnabled="true"
                            stdoutLogFile="%home%\LogFiles\python.log"
-                           startupTimeLimit="60">
+                           startupTimeLimit="180">
                 <environmentVariables>
                   <environmentVariable name="PYTHONPATH" value="%home%\site\wwwroot"/>
                   <environmentVariable name="PATH" value="%home%\Python312;%home%\Python312\Scripts;%PATH%"/>
@@ -72,12 +87,14 @@ jobs:
           EOL
 
       - name: Zip artifact for deployment
-        run: cd deploy && zip -r ../deploy.zip ./*
+        run: |
+          cd wwwroot
+          zip -r ../wwwroot.zip ./*
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'HelpCare'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: deploy.zip
+          package: wwwroot.zip
           clean: true
