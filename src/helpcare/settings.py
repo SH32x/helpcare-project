@@ -13,8 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-if 'WEBSITE_HOSTNAME' in os.environ: # Running on Azure
-    from azure import *
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -93,17 +92,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ['DBNAME'],
         'HOST': hostname + ".postgres.database.azure.com",
-        # 'USER': os.environ['DBUSER'], # For postgreSQL flexible server
         'USER': os.environ['DBUSER'] + "@" + hostname, # For postgreSQL single server
         'PASSWORD': os.environ['DBPASS'],
         'OPTIONS': {
-            'sslmode': 'verify-full',  
-            'ssl': {
-                'verify_cert': True,
-                'ssl_cert': None,  # Path to client-cert 
-                'ssl_key': None,   # Path to client-key 
-                'ssl_ca': None,    # Path to CA cert 
-            }
+            'sslmode': 'require'
         },
     }
 }

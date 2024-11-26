@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: 'Production'
@@ -30,20 +30,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          
-      - name: Create deployment package
-        run: |
-          # Install dependencies
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          
-          # Create startup command with correct path
-          echo 'cd src && gunicorn helpcare.wsgi:application --bind=0.0.0.0:8000' > startup.txt
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
